@@ -2,6 +2,7 @@ import { CronJob } from "cron";
 import { requireDB } from "./db.js";
 import SteamUser from "steamutils";
 import { sleep } from "steamutils/utils.js";
+import DiscordUser from "discord-control";
 
 export const natriGuildId = "675728216597463080";
 const generalChannel = "675728217037996085";
@@ -28,6 +29,15 @@ export default async function initCron() {
         );
 
         async function fetchReport(report) {
+          await collection.OverwatchReport.updateOne(
+            { _id: report._id },
+            {
+              $set: {
+                updated_at: Date.now(),
+              },
+            },
+          );
+
           const summary = await SteamUser.getUserSummaryFromProfile(
             report.steamId,
           );
@@ -102,11 +112,12 @@ export default async function initCron() {
           }, 2000);
         }
 
-        for await (const report of collection.OverwatchReport.aggregate([
+        for await (const report of await collection.OverwatchReport.aggregate([
           {
-            $match: { banned: { $exists: false } },
+            $match: { banned: { $ne: true } },
           },
-          { $sample: { size: 50 } },
+          { $sort: { updated_at: 1 } },
+          { $limit: 50 },
         ])) {
           await fetchReport(report);
         }
