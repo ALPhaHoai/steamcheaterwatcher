@@ -11,7 +11,7 @@ const bannedCheaterChannel = "1242161465205719110";
 export default async function initCron() {
   console.log("initCron");
   new CronJob(
-    "0 */30 * * * *",
+    "0 5 * * * *",
     async function () {
       await requireDB(async function (collection) {
         async function getDiscordAuthorization(account) {
