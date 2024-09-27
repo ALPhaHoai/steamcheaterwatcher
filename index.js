@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-
-import app from "./app.js";
+import "dotenv/config";
 import debug0 from "debug";
 import http from "http";
+
+import app from "./app.js";
 
 const debug = debug0("steamcheaterwatcher:server");
 
