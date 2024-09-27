@@ -13,6 +13,7 @@ export default async function initCron() {
   new CronJob(
     "0 5 * * * *",
     async function () {
+      const t1 = performance.now();
       await requireDB(async function (collection) {
         async function getDiscordAuthorization(account) {
           return (await collection.DiscordAccountHeader.findOne({ account }))
@@ -110,6 +111,8 @@ export default async function initCron() {
           await fetchReport(report);
         }
       });
+      const t2 = performance.now();
+      console.log(`watchDiscordReportCheater took: ${t2 - t1}ms`);
     },
     null,
     true,
