@@ -9,6 +9,7 @@ export async function requireDB(callback) {
   const collection = {};
   collection.MyAccount = db.collection("MyAccount");
   collection.Friend = db.collection("Friend");
+  collection.FriendInfo = db.collection("FriendInfo");
   collection.DiscordAccountHeader = db.collection("DiscordAccountHeader");
   collection.OverwatchReport = db.collection("OverwatchReport");
 

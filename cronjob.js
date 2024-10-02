@@ -78,9 +78,17 @@ export default async function initCron() {
             .map((author) => `<@${author.id}>`)
             .join(" ");
 
+          let content = `${authorsStr} [${summary.name.replaceAll(/\p{Extended_Pictographic}/gu, "")}](https://steamcommunity.com/profiles/${report.steamId}) : ${banned}`;
+          const friendDiscordId = (
+            await collection.FriendInfo.findOne({ steamId: report.steamId })
+          )?.discord;
+          if (friendDiscordId) {
+            content += ` <@${friendDiscordId}>`;
+          }
+
           const result = await botNatriDiscordUser.sendMessage({
             channelId: generalChannel,
-            content: `${authorsStr} [${summary.name}](${summary.url}) : ${banned}`,
+            content,
           });
 
           if (!result?.id) {
