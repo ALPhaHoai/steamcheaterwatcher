@@ -3,6 +3,7 @@ import { requireDB } from "./db.js";
 import SteamUser from "steamutils";
 import { sleep } from "steamutils/utils.js";
 import DiscordUser from "discord-control";
+import moment from "moment";
 
 export const natriGuildId = "675728216597463080";
 const generalChannel = "675728217037996085";
@@ -74,50 +75,52 @@ export default async function initCron() {
             },
           );
 
-          const authorsStr = report.authors
-            .map((author) => `<@${author.id}>`)
-            .join(" ");
+          if (Math.abs(moment().diff(moment(summary.dayLastBan), "days")) < 5) {
+            const authorsStr = report.authors
+              .map((author) => `<@${author.id}>`)
+              .join(" ");
 
-          let content = `${authorsStr} [${summary.name.replaceAll(/\p{Extended_Pictographic}/gu, "")}](https://steamcommunity.com/profiles/${report.steamId}) : ${banned}`;
-          const friendDiscordId = (
-            await collection.FriendInfo.findOne({ steamId: report.steamId })
-          )?.discord;
-          if (friendDiscordId) {
-            content += ` <@${friendDiscordId}>`;
-          }
+            let content = `${authorsStr} [${summary.name.replaceAll(/\p{Extended_Pictographic}/gu, "")}](https://steamcommunity.com/profiles/${report.steamId}) : ${banned}`;
+            const friendDiscordId = (
+              await collection.FriendInfo.findOne({ steamId: report.steamId })
+            )?.discord;
+            if (friendDiscordId) {
+              content += ` <@${friendDiscordId}>`;
+            }
 
-          const result = await botNatriDiscordUser.sendMessage({
-            channelId: generalChannel,
-            content,
-          });
-
-          if (!result?.id) {
-            return;
-          }
-
-          setTimeout(async function () {
-            await natriDiscordUser.thumbUpMessage({
+            const result = await botNatriDiscordUser.sendMessage({
               channelId: generalChannel,
-              messageId: result.id,
+              content,
             });
-            await natriDiscordUser.sendMessage({
-              channelId: generalChannel,
-              content: "lại 1 người nữa ra đi 🎶 🎵",
-              reply: {
-                guildId: natriGuildId,
-                messageId: result.id,
-              },
-            });
+
+            if (!result?.id) {
+              return;
+            }
+
             setTimeout(async function () {
-              for (const messageId of report.messageIds) {
-                await botNatriDiscordUser.thumbUpMessage({
-                  channelId: reportCheaterChannel,
-                  messageId,
-                });
-                await sleep(5000);
-              }
-            }, 10000);
-          }, 2000);
+              await natriDiscordUser.thumbUpMessage({
+                channelId: generalChannel,
+                messageId: result.id,
+              });
+              await natriDiscordUser.sendMessage({
+                channelId: generalChannel,
+                content: "lại 1 người nữa ra đi 🎶 🎵",
+                reply: {
+                  guildId: natriGuildId,
+                  messageId: result.id,
+                },
+              });
+              setTimeout(async function () {
+                for (const messageId of report.messageIds) {
+                  await botNatriDiscordUser.thumbUpMessage({
+                    channelId: reportCheaterChannel,
+                    messageId,
+                  });
+                  await sleep(5000);
+                }
+              }, 10000);
+            }, 2000);
+          }
         }
 
         for await (const report of await collection.OverwatchReport.aggregate([
