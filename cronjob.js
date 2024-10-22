@@ -4,6 +4,7 @@ import SteamUser from "steamutils";
 import { sleep } from "steamutils/utils.js";
 import DiscordUser from "discord-control";
 import moment from "moment";
+import { removePictographic } from "discord-control/utils.js";
 
 export const natriGuildId = "675728216597463080";
 const generalChannel = "675728217037996085";
@@ -80,7 +81,8 @@ export default async function initCron() {
               .map((author) => `<@${author.id}>`)
               .join(" ");
 
-            let content = `${authorsStr} [${summary.name.replaceAll(/\p{Extended_Pictographic}/gu, "")}](https://steamcommunity.com/profiles/${report.steamId}) : ${banned}`;
+            const name = removePictographic(summary.name) || report.steamId;
+            let content = `${authorsStr} [${name}](https://steamcommunity.com/profiles/${report.steamId}) : ${banned}`;
             const friendDiscordId = (
               await collection.FriendInfo.findOne({ steamId: report.steamId })
             )?.discord;
