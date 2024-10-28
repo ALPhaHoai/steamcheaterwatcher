@@ -1,5 +1,6 @@
 import qs from "qs";
 import axios from "axios";
+import _ from "lodash";
 
 async function request(method, params) {
   const paramsStr = qs.stringify(params);
